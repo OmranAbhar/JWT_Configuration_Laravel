@@ -62,3 +62,87 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+
+CONFIguration Step:
+composer require laravel/ui 
+
+php artisan ui bootstrap
+php artisan ui vue
+php artisan ui react
+
+php artisan ui bootstrap --auth
+php artisan ui vue --auth
+php artisan ui react --auth
+
+npm run install && npm run dev
+php artisan migrate
+composer remove tymon/jwt-auth 
+composer require php-open-source-saver/jwt-auth
+php artisan vendor:publish
+php artisan jwt:secret
+
+-->User.php
+			
+			user PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
+			implement App\JWTSubject
+
+			public function getJWTIdentifer(){
+				return $this->getKey();
+			}
+
+			public function getJWTCustomClaims(){
+				return [];
+			}
+
+-->auth.php
+			
+			defaults=> {
+			'guard' => 'api'
+			}
+
+			api=> {
+			'driver' => 'jwt'
+			}
+
+
+php artisan make:controller Api/AuthController
+
+-->routes api.php
+			Route::post('login','Api/AuthController@login');
+
+--. AuthController.php
+			
+			public function login(Request $request){
+		    	$creds=$request->only(['email','password']);
+
+		    	if(!$token=auth()->attempt($creds)){
+
+		    		return response()->json([
+		    			'success'=>false
+		    		]);
+		    	}
+		    	return response()->json([
+		    		'success'=>true,
+		    		'token'=>$token,
+		    		'user'=> Auth::user()
+		    	]);
+			}
+
+
+			public function logout(Request $request){
+			try{
+				JWTAuth::invalidate(JWTAuth::parseToken($request->token));
+
+				return response()->json([
+					'success'=>true,
+					'message'=>'logout success'
+				]);
+			}catch(exception e){
+
+				return response()->json([
+				'success'=.false,
+				'message'=>''.$e]);
+			}
+			}
+
